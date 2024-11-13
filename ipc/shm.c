@@ -822,12 +822,16 @@ static int shm_more_checks(struct kern_ipc_perm *ipcp, struct ipc_params *params
 
 long ksys_shmget(key_t key, size_t size, int shmflg)
 {
+	// key_t key: The key-id for the segment.
+	// int shmflg: Flags that determine the permissions and behavior of the segment.
 	struct ipc_namespace *ns;
 	static const struct ipc_ops shm_ops = {
-		.getnew = newseg,
-		.associate = security_shm_associate,
-		.more_checks = shm_more_checks,
+		.getnew = newseg,  // Function to create a new shared memory segment
+		.associate = security_shm_associate, // Function to handle security associations
+		.more_checks = shm_more_checks, // Additional checks to be performed
 	};
+
+	// Declare a structure to hold the parameters for the shared memory segment
 	struct ipc_params shm_params;
 
 	ns = current->nsproxy->ipc_ns;
@@ -836,9 +840,12 @@ long ksys_shmget(key_t key, size_t size, int shmflg)
 	shm_params.flg = shmflg;
 	shm_params.u.size = size;
 
+	// Call ipcget to create or retrieve the shared memory segment
+    // Pass the namespace, shared memory identifiers, operations, and parameters
 	return ipcget(ns, &shm_ids(ns), &shm_ops, &shm_params);
 }
 
+// This macro defines the system call interface for shmget
 SYSCALL_DEFINE3(shmget, key_t, key, size_t, size, int, shmflg)
 {
 	return ksys_shmget(key, size, shmflg);
